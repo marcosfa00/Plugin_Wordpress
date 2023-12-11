@@ -1,0 +1,31 @@
+version: '3.8'  # Asegúrate de usar la versión adecuada de Docker Compose
+
+services:
+  db:
+    image: mariadb:10.6.4-focal
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    ports:
+      - "3306:3306"
+      - "33060:33060"
+
+  wordpress:
+    image: wordpress:latest
+    volumes:
+      - ./html:/var/www/html
+    ports:
+      - "80:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+
+volumes:
+  db_data:
