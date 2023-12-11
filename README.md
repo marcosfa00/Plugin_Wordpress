@@ -39,6 +39,4 @@ Whenever a post or page is displayed, this plugin checks the content for any num
 
 If you encounter any issues or wish to contribute to this plugin, feel free to create an issue or pull request on the GitHub repository.
 
-### License
 
-This plugin is released under the [GPL-2.0+ License](https://www.gnu.org/licenses/gpl-2.0.html).
