@@ -38,5 +38,137 @@ La función substitute_last_letter_in_title reemplaza la última letra de los t�
 2. **Modificación del contenido de las publicaciones:**
    La función replace_numbers_with_factorials busca números en el contenido de las publicaciones y los reemplaza por sus factoriales. Utiliza expresiones regulares para identificar los números y luego utiliza la función factorial para calcular los factoriales correspondientes.
 
+## Methods.php
 
+Funcion que crea la tabla en la base de datos, **si ya existe no la vuelve a crear.**
+
+```php
+function custom_table_activation()
+{
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'Letras'; // Nombre de la tabla con prefijo de WordPress
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    // Query para crear la tabla
+    $sql = "CREATE TABLE $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        letra char(1) NOT NULL,
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+
+    // Se requiere el archivo upgrade.php para utilizar dbDelta()
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql); // Si la tabla ya está creada, no la vuelve a crear
+}
+```
+La función de inset, inserta los datos, en este caso todas las letras del abecedario **MAYUSCULAS.**
+
+```php
+
+function insert_letters_into_table() {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'Letras'; // Nombre de la tabla con prefijo de WordPress
+
+    // Array con todas las letras del abecedario
+    $letters = range('A', 'Z');
+
+    // Preparar el array para realizar la inserción
+    $insert_values = array();
+    foreach ($letters as $letter) {
+        $insert_values[] = array(
+            'letra' => $letter
+        );
+    }
+
+    // Insertar las letras en la tabla
+    foreach ($insert_values as $insert_data) {
+        $wpdb->insert($table_name, $insert_data);
+    }
+}
+```
+
+## Main.php
+
+Aquí es donde realmente viene lo gordo del asunto, donde se hace la magia, en este archivo es donde se crean los **add_filter** que modifican el contenido de la página.
+
+Podemos comporbar que el primer filtro del titulo es muy sencillito, comprueba la **ultima letra** del titulo y la sustituye por la letra que tenemos en la base de datos.
+
+```php
+function substitute_last_letter_in_title($title) {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'Letras'; // Nombre de la tabla con prefijo de WordPress
+
+    // Obtener la última letra del título
+    $last_letter = substr($title, -1);
+
+    // Convertir la última letra del título a mayúscula
+    $last_letter_uppercase = strtoupper($last_letter);
+
+    // Consulta para obtener la letra correspondiente de la base de datos
+    $query = $wpdb->prepare("SELECT letra FROM $table_name WHERE letra = %s", $last_letter_uppercase);
+
+    // Obtener la letra correspondiente de la base de datos
+    $db_letter = $wpdb->get_var($query);
+
+    // Reemplazar la última letra del título con la letra de la base de datos
+    if ($db_letter !== null) {
+        $new_title = substr_replace($title, $db_letter, -1);
+        return $new_title;
+    }
+
+    return $title; // Devolver el título original si no se encuentra la letra en la base de datos
+}
+```
+
+### The content
+l segundo filtro es un poco más complejo, ya que tiene que buscar los números en el contenido de la página y sustituirlos por su factorial.
+
+```php
+function replace_numbers_with_factorials($content) {
+    // Expresión regular para encontrar números en el texto
+    $pattern = '/\b(\d+)\b/';
+
+    // Reemplazar los números por sus factoriales utilizando preg_replace_callback
+    $content_with_factorials = preg_replace_callback($pattern, 'replace_with_factorial', $content);
+
+    return $content_with_factorials; // Devolver el contenido con los números reemplazados por sus factoriales
+}
+```
+y ahora te preguntarás que interesante, y cómo calculamos el factorial, pues esto mismo se ve en uno de los cursos de **php** que he realizado, y es muy sencillo, se crea una función que calcula el factorial de un número.
+Esta función debe ser recursiva, es decir, que se llama a sí misma, y se llama a sí misma hasta que el número sea 1.
+
+```php
+function factorial($numero){
+    //hay una excepción y es que el factorial de 1 es 1
+    if ($numero == 1 || $numero == 0) {
+        return 1;
+    } else {
+        return $numero * factorial($numero-1);
+    }
+}
+```
+
+# Filter
+Por supuesto, para que todas ests funciones se vena reflejadas en nuestra páguna, debemos hacer un **add_filter**, que es lo que realmente hace que se ejecute la función.
+
+```php
+add_filter('the_content', 'replace_numbers_with_factorials');
+add_filter('the_title', 'substitute_last_letter_in_title');
+```
+
+# Database
+También pasa lo mismo con **add_action** que es lo que hace que se ejecute la función, en este caso la función que crea la tabla y la función que inserta los datos en la tabla.
+
+```php
+add_action('plugins_loaded', 'insert_letters_into_table');
+add_action('plugins_loaded', 'custom_table_activation');
+``` 
+
+# Signature
+
+**Marcos Fernández Avendaño**
 
