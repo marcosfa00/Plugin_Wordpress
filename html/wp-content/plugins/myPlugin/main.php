@@ -17,11 +17,11 @@ function substitute_last_letter_in_title($title) {
     // Obtener la última letra del título
     $last_letter = substr($title, -1);
 
-    // Convertir la última letra del título a mayúscula
-    $last_letter_uppercase = strtoupper($last_letter);
+    // Generar un número aleatorio entre 1 y 27 (inclusive)
+    $random_number = mt_rand(1, 27);
 
-    // Consulta para obtener la letra correspondiente de la base de datos
-    $query = $wpdb->prepare("SELECT letra FROM $table_name WHERE letra = %s", $last_letter_uppercase);
+    // Consulta para obtener la letra correspondiente del número aleatorio
+    $query = $wpdb->prepare("SELECT letra FROM $table_name WHERE id = %d", $random_number);
 
     // Obtener la letra correspondiente de la base de datos
     $db_letter = $wpdb->get_var($query);
@@ -34,8 +34,11 @@ function substitute_last_letter_in_title($title) {
 
     return $title; // Devolver el título original si no se encuentra la letra en la base de datos
 }
+
 //add_action('the_title', 'substitute_last_letter_in_title');
 add_filter('the_title', 'substitute_last_letter_in_title');
+
+
 
 
 function replace_numbers_with_factorials($content) {

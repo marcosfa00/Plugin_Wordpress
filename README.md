@@ -94,22 +94,22 @@ function insert_letters_into_table() {
 
 Aquí es donde realmente viene lo gordo del asunto, donde se hace la magia, en este archivo es donde se crean los **add_filter** que modifican el contenido de la página.
 
-Podemos comporbar que el primer filtro del titulo es muy sencillito, comprueba la **ultima letra** del titulo y la sustituye por la letra que tenemos en la base de datos.
+Cambio de ultima hora en este commit, he decidido crear una nueva función que subtituye la ultima letra del titulo por la letra correspondiente al id de la bae de datos, es decir, se genera un numero aleatorio entre 1 y 27 y cambia esta ultima letra del titulo por la generada, si sale el id 3 por ejemplo se subtituye por la letra C
 
 ```php
 function substitute_last_letter_in_title($title) {
-    global $wpdb;
+global $wpdb;
 
     $table_name = $wpdb->prefix . 'Letras'; // Nombre de la tabla con prefijo de WordPress
 
     // Obtener la última letra del título
     $last_letter = substr($title, -1);
 
-    // Convertir la última letra del título a mayúscula
-    $last_letter_uppercase = strtoupper($last_letter);
+    // Generar un número aleatorio entre 1 y 27 (inclusive)
+    $random_number = mt_rand(1, 27);
 
-    // Consulta para obtener la letra correspondiente de la base de datos
-    $query = $wpdb->prepare("SELECT letra FROM $table_name WHERE letra = %s", $last_letter_uppercase);
+    // Consulta para obtener la letra correspondiente del número aleatorio
+    $query = $wpdb->prepare("SELECT letra FROM $table_name WHERE id = %d", $random_number);
 
     // Obtener la letra correspondiente de la base de datos
     $db_letter = $wpdb->get_var($query);
@@ -122,7 +122,11 @@ function substitute_last_letter_in_title($title) {
 
     return $title; // Devolver el título original si no se encuentra la letra en la base de datos
 }
-```
+````
+//add_action('the_title', 'substitute_last_letter_in_title');
+add_filter('the_title', 'substitute_last_letter_in_title');
+
+
 
 ### The content
 l segundo filtro es un poco más complejo, ya que tiene que buscar los números en el contenido de la página y sustituirlos por su factorial.
@@ -171,4 +175,7 @@ add_action('plugins_loaded', 'custom_table_activation');
 # Signature
 
 **Marcos Fernández Avendaño**
+
+
+
 
