@@ -1,42 +1,42 @@
 ## README
 
-### Marcosfa WordPress Plugin with DOCKER COMPOSE
+### Marcosfa WordPress Plugin con DOCKER COMPOSE
 
-This plugin integrates with a WordPress setup running on Docker Compose. It adds functionalities that modify content displayed on your WordPress site, creating a custom table in the WordPress database and performing dynamic replacements in titles and content.
+Principalemnte hemos levantado el servicio de **Wordpress** con un archivo **docker-compose.yml** que contiene los siguientes servicios:
 
-### Installation within Docker Compose Environment
+- **db**: Base de datos MariaDB
+- **wordpress**: Servidor de Wordpress
 
-To use this plugin within a Docker Compose environment:
+### Archivo YML
 
-1. **Download the Plugin:** Download the plugin folder and place it in the `/html/wp-content/plugins/` directory of your WordPress setup within the Docker volume.
-2. **Activate the Plugin:** Log in to your WordPress dashboard, navigate to the "Plugins" section, and activate the "Marcosfa Plugin."
+Para levantar los servicios ejecutamos el siguiente comando:
 
-### Docker Compose Configuration
+```bash
+docker-compose up -d
+```
 
-This plugin is designed to work within a Docker Compose setup. Ensure that your `docker-compose.yml` file is configured appropriately, including the services for `db` (MariaDB) and `wordpress`.
+# PLUGIN
+## ESTRUCTURA
 
-### Plugin Functionalities
+Como buen programador hemos estructurado el código en una especia de Patrón **MV** (Modelo Vista) donde tenemos:
+Una carpeta Contenedora llamada **myPluguin** que contiene dos archivos **php**:
 
-#### 1. Custom Table Creation and Letter Insertion
+- **main.php**: Archivo principal que contiene "la vista"
+- **Metho.php**: Archivo que contiene los métodos que se usan en el archivo principal
 
-Upon activation, the plugin creates a custom table named `wp_Letras` in the WordPress database (`wordpress` database specified in the environment) within the MariaDB service. It inserts letters from A to Z into this table.
+Basicamente el criterio que he seguido ha sido separar en el archivo **METHODS.PHP** los métodos que hacen referencia a la base de datos,
+es decir Crear la tabla e insertar los datos en la tabla.
 
-#### 2. Modify Title's Last Letter
+Por otro lado en el archivo **main.php** es donde he creado los métodos que muestran un cambio en nuestra página
+es decir, los **add_filter**
 
-This functionality modifies the last letter of post titles displayed on your WordPress site. It checks if the last letter of the title matches any letter in the `wp_Letras` table. If it does, it substitutes the last letter of the title with the corresponding letter from the database.
+## FUNCIONAMIENTO
 
-#### 3. Replace Numbers with Factorials in Content
+1. **Modificación de títulos de publicaciones:**
+La función substitute_last_letter_in_title reemplaza la última letra de los títulos de las publicaciones por una letra almacenada en la base de datos. Utiliza consultas SQL para buscar la última letra del título y luego busca su correspondencia en la tabla Letras. Si encuentra una coincidencia, reemplaza la última letra del título por la letra de la base de datos.
 
-Whenever a post or page is displayed, this plugin checks the content for any numerical values. If it finds a number, it replaces it with its factorial value.
+2. **Modificación del contenido de las publicaciones:**
+   La función replace_numbers_with_factorials busca números en el contenido de las publicaciones y los reemplaza por sus factoriales. Utiliza expresiones regulares para identificar los números y luego utiliza la función factorial para calcular los factoriales correspondientes.
 
-### Important Notes:
-
-- **Database Structure:** The plugin creates a table named `wp_Letras` in the `wordpress` database specified within the `db` service defined in Docker Compose. Please ensure proper backup and handle with caution if modifying database structures.
-- **Dynamic Modifications:** Title modifications and content replacements occur dynamically within WordPress posts and pages.
-- **Plugin Directory:** Place the plugin folder within the WordPress plugin directory (`/html/wp-content/plugins/`) to ensure proper integration and activation within the Docker Compose setup.
-
-### Contributing and Issues
-
-If you encounter any issues or wish to contribute to this plugin, feel free to create an issue or pull request on the GitHub repository.
 
 
